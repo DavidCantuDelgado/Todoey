@@ -8,7 +8,7 @@
 
 import UIKit
 
-class Item: NSObject {
+class Item: Codable {
     var item: String = ""
     var done: Bool = false
 
