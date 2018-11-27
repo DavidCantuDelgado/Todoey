@@ -8,12 +8,14 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 class ToDoListViewController: SwipeTableTableViewController {
 
     var todoItems : Results<Item>?
     let realm = try! Realm()
     
+    @IBOutlet weak var searchBar: UISearchBar!
     
     
     var selectedCategory : Category? {
@@ -25,7 +27,32 @@ class ToDoListViewController: SwipeTableTableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        tableView.separatorStyle = .none
+        
+        
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        title = selectedCategory!.name
+        guard let colorHex = selectedCategory?.color else {fatalError()}
+        
+        updateNavBar(withHexCode: colorHex)
+        
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        updateNavBar(withHexCode: "FFFFFF")
+    }
+    
+    // MARK: - Navigation Bar Setup Methods
+    func updateNavBar(withHexCode colorHex: String) {
+        guard let navBar = navigationController?.navigationBar else {fatalError("NAvigatiion controller does not exist.")}
+        navBar.barTintColor = UIColor(hexString: colorHex)
+        navBar.tintColor = UIColor(contrastingBlackOrWhiteColorOn: UIColor(hexString: colorHex), isFlat: true)
+        navBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor(contrastingBlackOrWhiteColorOn: UIColor(hexString: colorHex), isFlat: true)]
+        searchBar.barTintColor = UIColor(hexString: colorHex)
+    }
+        
 
     // MARK: - Table view data source
     
@@ -48,6 +75,13 @@ class ToDoListViewController: SwipeTableTableViewController {
         } else {
             cell.textLabel?.text = "No Items Added"
         }
+        
+        if let color = UIColor(hexString: selectedCategory!.color)?.darken(byPercentage: CGFloat(indexPath.row) / CGFloat(todoItems!.count)) {
+            cell.backgroundColor = color
+            cell.textLabel?.textColor = UIColor(contrastingBlackOrWhiteColorOn: color.darken(byPercentage: CGFloat(indexPath.row) / CGFloat(todoItems!.count)), isFlat: true)
+        }
+        
+        
         return cell
     }
     
